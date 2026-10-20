@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Los Cuatro Evangelios | Consolidación y Armonización</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet">
+</head>
+<body class="theme-light">
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="app-logo">
+        <span class="logo-icon">📖</span>
+        <div class="logo-text">
+          <h1>Los Cuatro Evangelios</h1>
+          <span class="subtitle">Editor de Armonización y Consolidación</span>
+        </div>
+      </div>
+      <div class="connection-status" id="connectionStatus" title="Estado de conexión con el servidor local">
+        <span class="status-dot"></span>
+        <span class="status-label">Verificando...</span>
+      </div>
+    </div>
+
+    <!-- Global Progress Summary -->
+    <div class="header-progress">
+      <div class="progress-info">
+        <span class="progress-title">Progreso total:</span>
+        <span class="progress-count" id="globalProgressCount">0 / 3,769</span>
+        <span class="progress-pct" id="globalProgressPct">(0%)</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="globalProgressBar" style="width: 0%"></div>
+      </div>
+      <div class="gospel-mini-badges">
+        <span class="gospel-badge-mini mt" id="badgeMt" title="San Mateo">Mt: 0/1067</span>
+        <span class="gospel-badge-mini mc" id="badgeMc" title="San Marcos">Mc: 0/674</span>
+        <span class="gospel-badge-mini lc" id="badgeLc" title="San Lucas">Lc: 0/1149</span>
+        <span class="gospel-badge-mini jn" id="badgeJn" title="San Juan">Jn: 0/879</span>
+      </div>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <div class="view-switch-group">
+        <button id="btnViewEditor" class="btn-toggle active" title="Modo Editor (Dos paneles)">
+          <span class="btn-icon">⚡</span> Editor
+        </button>
+        <button id="btnViewReader" class="btn-toggle" title="Modo Lectura (Libro consolidado)">
+          <span class="btn-icon">📜</span> Libro Completo
+        </button>
+      </div>
+
+      <div class="action-btn-group">
+        <button id="btnGlobalSearch" class="btn btn-secondary btn-sm" title="Buscar en todos los evangelios (Ctrl+F)">
+          <span class="btn-icon">🔍</span> Buscar
+        </button>
+        <button id="btnSave" class="btn btn-primary btn-sm" title="Guardar proyecto en disco y memoria">
+          <span class="btn-icon">💾</span> <span id="saveBtnText">Guardar</span>
+        </button>
+        <button id="btnExportMenu" class="btn btn-secondary btn-sm" title="Exportar libro (TXT, Markdown, JSON)">
+          <span class="btn-icon">📥</span> Exportar
+        </button>
+        <button id="btnImport" class="btn btn-secondary btn-sm" title="Importar proyecto JSON guardado">
+          <span class="btn-icon">📤</span> Importar
+        </button>
+        <button id="btnThemeToggle" class="btn btn-icon-only" title="Cambiar tema Claro / Oscuro">
+          🌙
+        </button>
+        <button id="btnHelp" class="btn btn-icon-only" title="Ayuda y atajos de teclado">
+          ❓
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE CONTAINER -->
+  <main class="main-workspace" id="workspaceContainer">
+    
+    <!-- ============================================== -->
+    <!-- PANEL IZQUIERDO: FUENTES (LOS 4 EVANGELIOS)   -->
+    <!-- ============================================== -->
+    <section class="panel panel-source" id="sourcePanel">
+      <div class="panel-header">
+        <div class="panel-header-title">
+          <h2>Evangelios Fuente</h2>
+          <span class="panel-tag">Origen</span>
+        </div>
+
+        <!-- Gospel Selection Tabs -->
+        <div class="gospel-tabs" id="gospelTabs" role="tablist">
+          <button class="gospel-tab active mt" data-gospel="mt" role="tab">
+            <span class="g-abbr">Mt</span>
+            <span class="g-name">Mateo</span>
+            <span class="g-count" id="countTabMt">0/1067</span>
+          </button>
+          <button class="gospel-tab mc" data-gospel="mc" role="tab">
+            <span class="g-abbr">Mc</span>
+            <span class="g-name">Marcos</span>
+            <span class="g-count" id="countTabMc">0/674</span>
+          </button>
+          <button class="gospel-tab lc" data-gospel="lc" role="tab">
+            <span class="g-abbr">Lc</span>
+            <span class="g-name">Lucas</span>
+            <span class="g-count" id="countTabLc">0/1149</span>
+          </button>
+          <button class="gospel-tab jn" data-gospel="jn" role="tab">
+            <span class="g-abbr">Jn</span>
+            <span class="g-name">Juan</span>
+            <span class="g-count" id="countTabJn">0/879</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Chapter Selection Navigation -->
+      <div class="chapter-nav-bar">
+        <div class="chapter-nav-controls">
+          <button id="btnPrevChapter" class="btn-nav-arrow" title="Capítulo anterior">◀</button>
+          <div class="chapter-select-wrapper">
+            <label for="chapterSelect">Capítulo:</label>
+            <select id="chapterSelect" class="chapter-dropdown"></select>
+          </div>
+          <button id="btnNextChapter" class="btn-nav-arrow" title="Capítulo siguiente">▶</button>
+        </div>
+
+        <!-- Chapter quick pills scrollable -->
+        <div class="chapter-pills-container" id="chapterPillsContainer">
+          <!-- Filled dynamically via JS -->
+        </div>
+      </div>
+
+      <!-- Instructions & Fast Helper -->
+      <div class="interaction-hint">
+        <span class="hint-badge">💡 Tip</span>
+        <span>Haz <strong>Doble Clic</strong> o <strong>Clic Derecho</strong> en cualquier versículo para transferirlo directamente al capítulo actual.</span>
+      </div>
+
+      <!-- Verses Filters & Search -->
+      <div class="verse-filter-bar">
+        <div class="filter-search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="verseFilterInput" placeholder="Filtrar versículos de este capítulo..." autocomplete="off">
+          <button id="btnClearFilter" class="btn-clear-filter" style="display:none;" title="Limpiar filtro">✕</button>
+        </div>
+        <div class="filter-status-buttons">
+          <button class="btn-chip active" data-filter="all">Todos (<span id="countFilteredAll">0</span>)</button>
+          <button class="btn-chip" data-filter="pending">Pendientes (<span id="countFilteredPending">0</span>)</button>
+          <button class="btn-chip" data-filter="added">Agregados (<span id="countFilteredAdded">0</span>)</button>
+        </div>
+      </div>
+
+      <!-- Action bar for bulk operations -->
+      <div class="source-bulk-bar">
+        <span id="sourceChapterSummary" class="chapter-summary-text">Cargando...</span>
+        <div class="bulk-buttons">
+          <button id="btnReadSourceChapter" class="btn btn-outline btn-xs btn-audio-play" title="Escuchar este capítulo completo en voz alta">
+            <span class="audio-icon">🔊</span> <span class="audio-text">Leer Capítulo</span>
+          </button>
+          <button id="btnAddAllChapter" class="btn btn-outline btn-xs" title="Añadir todos los versículos pendientes de este capítulo">
+            + Añadir capítulo entero
+          </button>
+        </div>
+      </div>
+
+      <!-- Verses List (Left side) -->
+      <div class="verses-scroll-area" id="sourceVersesContainer">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- PANEL DERECHO: DESTINO ("LOS CUATRO EVANGELIOS") -->
+    <!-- ============================================== -->
+    <section class="panel panel-target" id="targetPanel">
+      <div class="panel-header">
+        <div class="panel-header-title">
+          <div class="book-title-editor">
+            <h2 id="targetBookTitle" contenteditable="true" spellcheck="false" title="Haz clic para editar el título del libro">Los Cuatro Evangelios</h2>
+            <button id="btnEditBookTitle" class="btn-edit-title" title="Editar título del libro">✏️</button>
+          </div>
+          <span class="panel-tag target-tag">Nuevo Libro</span>
+        </div>
+
+        <div class="target-stats-bar">
+          <span class="stat-item" id="targetTotalVerses">Total: <strong>0</strong> versículos</span>
+          <span class="stat-divider">•</span>
+          <span class="stat-item" id="targetTotalChapters"><strong>1</strong> capítulos</span>
+          <span class="stat-divider">•</span>
+          <span class="stat-item" id="targetTotalWords"><strong>0</strong> palabras</span>
+        </div>
+      </div>
+
+      <!-- Target Chapters Tabs / Management -->
+      <div class="target-chapter-mgmt">
+        <div class="target-chapters-scroll" id="targetChaptersContainer">
+          <!-- Filled dynamically: Cap 1, Cap 2, etc. -->
+        </div>
+        <button id="btnNewTargetChapter" class="btn-add-chapter" title="Crear un nuevo capítulo en Los Cuatro Evangelios">
+          + Nuevo Capítulo
+        </button>
+      </div>
+
+      <!-- Active Chapter Header & Subtitle -->
+      <div class="active-chapter-toolbar">
+        <div class="chapter-heading-edit">
+          <span class="cap-number-badge" id="activeChapterBadge">Cap. 1</span>
+          <input type="text" id="targetChapterTitleInput" class="chapter-title-input" placeholder="Título opcional del capítulo (ej: Genealogía y Anunciación)..." title="Asigna un título temático a este capítulo">
+        </div>
+
+        <div class="chapter-actions-menu">
+          <button id="btnMoveChapterLeft" class="btn-icon-chapter" title="Mover este capítulo hacia la izquierda (anterior)">◀</button>
+          <button id="btnMoveChapterRight" class="btn-icon-chapter" title="Mover este capítulo hacia la derecha (siguiente)">▶</button>
+          <button id="btnDeleteChapter" class="btn-icon-chapter danger" title="Eliminar este capítulo de Los Cuatro Evangelios">🗑️</button>
+        </div>
+      </div>
+
+      <!-- Active Chapter Summary -->
+      <div class="target-chapter-summary-bar">
+        <span id="activeChapterStats">0 versículos en este capítulo</span>
+        <div class="chapter-quick-actions">
+          <button id="btnReadTargetChapter" class="btn btn-outline btn-xs btn-audio-play" title="Escuchar este capítulo completo en voz alta">
+            <span class="audio-icon">🔊</span> <span class="audio-text">Leer Capítulo</span>
+          </button>
+          <button id="btnRenumberChapter" class="btn btn-outline btn-xs" title="Renumerar versículos consecutivamente (1, 2, 3...)">
+            🔢 Renumerar
+          </button>
+          <button id="btnClearTargetChapter" class="btn btn-outline btn-xs danger-text" title="Quitar todos los versículos de este capítulo">
+            Vaciar capítulo
+          </button>
+        </div>
+      </div>
+
+      <!-- Target Verses List -->
+      <div class="verses-scroll-area target-verses-list" id="targetVersesContainer">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================== -->
+  <!-- VISTA DE LECTURA (LIBRO COMPLETO)             -->
+  <!-- ============================================== -->
+  <section class="reader-view" id="readerView" style="display: none;">
+    <div class="reader-toolbar">
+      <div class="reader-toolbar-left">
+        <button id="btnBackToEditor" class="btn btn-primary btn-sm">
+          ◀ Volver al Editor
+        </button>
+        <span class="reader-title-label">Vista de Lectura / Maquetación de Libro</span>
+      </div>
+      <div class="reader-toolbar-right">
+        <label class="reader-option-toggle">
+          <input type="checkbox" id="chkShowOriginTags" checked>
+          <span>Mostrar referencias de origen [Mt 1:1]</span>
+        </label>
+        <button id="btnReadReaderBook" class="btn btn-secondary btn-sm btn-audio-play" title="Escuchar el libro en voz alta">
+          <span class="audio-icon">🔊</span> <span class="audio-text">Escuchar Libro</span>
+        </button>
+        <button id="btnPrintBook" class="btn btn-secondary btn-sm" title="Imprimir o guardar como PDF">
+          🖨️ Imprimir / PDF
+        </button>
+        <button id="btnCopyBookText" class="btn btn-secondary btn-sm" title="Copiar todo el libro al portapapeles">
+          📋 Copiar texto
+        </button>
+      </div>
+    </div>
+
+    <div class="reader-paper-wrapper">
+      <article class="reader-book-paper" id="readerBookContent">
+        <!-- Rendered dynamically -->
+      </article>
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- MODAL: EXPORTAR PROYECTO Y LIBRO               -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="modalExport" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Exportar "Los Cuatro Evangelios"</h3>
+        <button class="modal-close" id="btnCloseExportModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Elige el formato en el que deseas exportar tu libro consolidado:</p>
+        
+        <div class="export-options-grid">
+          <div class="export-card" id="btnExportJSON">
+            <div class="export-icon">💾</div>
+            <div class="export-details">
+              <strong>Proyecto Completo (.json)</strong>
+              <span>Guarda la estructura, capítulos y referencias para continuar en cualquier momento o hacer copias de seguridad.</span>
+            </div>
+            <button class="btn btn-primary btn-xs">Descargar JSON</button>
+          </div>
+
+          <div class="export-card" id="btnExportServerFiles">
+            <div class="export-icon">📁</div>
+            <div class="export-details">
+              <strong>Guardar en Archivos Locales</strong>
+              <span>Guarda directamente <code>los_cuatro_evangelios.txt</code> y <code>.md</code> en la carpeta del proyecto.</span>
+            </div>
+            <button class="btn btn-primary btn-xs">Guardar en Disco</button>
+          </div>
+
+          <div class="export-card" id="btnExportTXT">
+            <div class="export-icon">📄</div>
+            <div class="export-details">
+              <strong>Texto Plano (.txt)</strong>
+              <span>Formato limpio ideal para leer, imprimir o importar en cualquier editor de texto o Word.</span>
+            </div>
+            <button class="btn btn-secondary btn-xs">Descargar TXT</button>
+          </div>
+
+          <div class="export-card" id="btnExportMD">
+            <div class="export-icon">📝</div>
+            <div class="export-details">
+              <strong>Markdown (.md)</strong>
+              <span>Formato con títulos, negritas y versículos numerados para plataformas digitales y documentación.</span>
+            </div>
+            <button class="btn btn-secondary btn-xs">Descargar MD</button>
+          </div>
+
+          <div class="export-card" id="btnExportHTML">
+            <div class="export-icon">🌐</div>
+            <div class="export-details">
+              <strong>Página Web Lista para Impresión (.html)</strong>
+              <span>Documento estilizado con tipografía bíblica y maquetación de libro independiente.</span>
+            </div>
+            <button class="btn btn-secondary btn-xs">Descargar HTML</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: IMPORTAR PROYECTO                       -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="modalImport" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Importar Proyecto Guardado</h3>
+        <button class="modal-close" id="btnCloseImportModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Sube un archivo de copia de seguridad <code>.json</code> previamente exportado:</p>
+        
+        <div class="dropzone" id="importDropzone">
+          <div class="dropzone-icon">📥</div>
+          <p>Arrastra aquí tu archivo <strong>.json</strong> o haz clic para seleccionarlo</p>
+          <input type="file" id="fileInputImport" accept=".json" style="display: none;">
+        </div>
+
+        <div class="modal-warning">
+          ⚠️ <em>Al importar, se cargará el libro guardado en el archivo. Se creará una copia de seguridad automática de tu trabajo actual.</em>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: BÚSQUEDA GLOBAL                         -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="modalGlobalSearch" style="display: none;">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3>Buscar en los Cuatro Evangelios</h3>
+        <button class="modal-close" id="btnCloseSearchModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="global-search-input-wrap">
+          <input type="text" id="globalSearchInput" placeholder="Escribe cualquier palabra o frase (ej: 'bienaventurados', 'Lázaro', 'estrella')..." autocomplete="off">
+          <span class="search-tip">Presiona Enter para buscar</span>
+        </div>
+
+        <div class="search-filters-row">
+          <label><input type="checkbox" id="chkSearchMt" checked> Mateo</label>
+          <label><input type="checkbox" id="chkSearchMc" checked> Marcos</label>
+          <label><input type="checkbox" id="chkSearchLc" checked> Lucas</label>
+          <label><input type="checkbox" id="chkSearchJn" checked> Juan</label>
+        </div>
+
+        <div class="search-results-stats" id="searchResultsStats">Escribe una palabra para iniciar la búsqueda.</div>
+
+        <div class="search-results-list" id="searchResultsList">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: AYUDA Y ATAJOS                          -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="modalHelp" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Ayuda y Cómo Funciona</h3>
+        <button class="modal-close" id="btnCloseHelpModal">✕</button>
+      </div>
+      <div class="modal-body help-content">
+        <h4>🎯 Objetivo</h4>
+        <p>Esta aplicación te permite consolidar y armonizar los 4 Evangelios (Mateo, Marcos, Lucas y Juan) en un solo libro ordenado y continuo titulado <strong>"Los Cuatro Evangelios"</strong>.</p>
+        
+        <h4>⚡ Selección de Versículos (Requerimiento clave)</h4>
+        <ul>
+          <li><strong>Doble Clic:</strong> Haz doble clic sobre cualquier versículo de la columna izquierda para transferirlo de inmediato al capítulo activo de Los Cuatro Evangelios.</li>
+          <li><strong>Clic Derecho:</strong> Haz clic derecho sobre cualquier versículo para transferirlo directamente al capítulo activo sin abrir el menú del navegador.</li>
+          <li><strong>Botón (+):</strong> También puedes hacer clic sobre el botón "+" que aparece al pasar el cursor sobre un versículo.</li>
+        </ul>
+
+        <h4>📖 Gestión de Capítulos</h4>
+        <ul>
+          <li>En el panel derecho puedes crear tantos capítulos como desees usando <strong>"+ Nuevo Capítulo"</strong>.</li>
+          <li>Puedes darle un subtítulo temático a cada capítulo (ej: "Capítulo 1: La Anunciación y Genealogías").</li>
+          <li>Puedes reordenar los versículos dentro del capítulo con las flechas ▲ y ▼ o arrastrándolos.</li>
+          <li>Puedes editar el texto de cualquier versículo transferido para pulir la armonización de frases.</li>
+        </ul>
+
+        <h4>💾 Guardado Automático</h4>
+        <p>Tu avance se guarda <strong>automáticamente</strong> en la memoria del navegador (LocalStorage) y también puedes pulsar <strong>Guardar</strong> para guardarlo en el archivo <code>los_cuatro_evangelios_proyecto.json</code> en el disco duro.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Hidden file input for import -->
+  <input type="file" id="importFileInput" accept=".json" style="display:none;">
+
+  <!-- Data Script (Offline Support) -->
+  <script src="data/gospels.js"></script>
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
