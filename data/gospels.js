@@ -3981,5 +3981,17 @@ window.GOSPELS_DATA = {
         "25": "Hay además otras muchas cosas que hizo Jesús. Si se escribieran una por una, pienso que ni todo el mundo bastaría para contener los libros que se escribieran."
       }
     }
+  },
+  "fs": {
+    "key": "fs",
+    "name": "Fusión",
+    "fullName": "Evangelio Armonizado / Fusión",
+    "abbreviation": "fs",
+    "color": "#9333ea",
+    "capitulos": {
+      "1": {
+        "1": "En el principio era la Palabra, y la Palabra estaba con Dios, y la Palabra era Dios."
+      }
+    }
   }
 };

@@ -7,6 +7,38 @@ const ROOT_DIR = __dirname;
 const PROJECT_FILE = path.join(ROOT_DIR, 'los_cuatro_evangelios_proyecto.json');
 const BACKUP_FILE = path.join(ROOT_DIR, 'los_cuatro_evangelios_proyecto.bak.json');
 
+// Firebase Cloud Sync on Server
+let firebaseDb = null;
+let fbDoc = null;
+let fbSetDoc = null;
+let fbGetDoc = null;
+
+async function initServerFirebase() {
+  try {
+    const { initializeApp } = await import('firebase/app');
+    const { getFirestore, doc, setDoc, getDoc } = await import('firebase/firestore');
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCDjE-CA21la_rBIpCsb76154UW60AyroM",
+      authDomain: "los-cuatro-evangelios.firebaseapp.com",
+      projectId: "los-cuatro-evangelios",
+      storageBucket: "los-cuatro-evangelios.firebasestorage.app",
+      messagingSenderId: "1021231312735",
+      appId: "1:1021231312735:web:859daa6e596713d72e50ea"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    firebaseDb = getFirestore(app);
+    fbDoc = doc;
+    fbSetDoc = setDoc;
+    fbGetDoc = getDoc;
+    console.log('  🔥 Firebase Firestore conectado en el servidor Node.js');
+  } catch (err) {
+    console.warn('  ⚠️ Firebase en servidor:', err.message);
+  }
+}
+initServerFirebase();
+
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -104,9 +136,28 @@ const server = http.createServer(async (req, res) => {
 
       fs.writeFileSync(PROJECT_FILE, JSON.stringify(body.project, null, 2), 'utf8');
 
+      // Intentar sincronizar también con Firebase Cloud desde el servidor
+      let firebaseSynced = false;
+      let firebaseError = null;
+      if (firebaseDb && fbSetDoc && fbDoc) {
+        try {
+          const docRef = fbDoc(firebaseDb, 'proyectos', 'los-cuatro-evangelios');
+          await fbSetDoc(docRef, {
+            ...body.project,
+            ultimaModificacion: new Date().toISOString(),
+            actualizadoDesde: 'servidor-local'
+          }, { merge: true });
+          firebaseSynced = true;
+        } catch (fbErr) {
+          firebaseError = fbErr.message;
+        }
+      }
+
       sendJSON(res, 200, {
         success: true,
-        message: 'Proyecto guardado exitosamente en disco',
+        message: 'Proyecto guardado exitosamente en disco' + (firebaseSynced ? ' y en Firebase Cloud' : ''),
+        firebaseSynced,
+        firebaseError,
         savedAt: new Date().toISOString()
       });
     } catch (err) {

@@ -24,6 +24,10 @@
         <span class="status-dot"></span>
         <span class="status-label">Verificando...</span>
       </div>
+      <div class="firebase-status" id="firebaseStatus" title="Estado de sincronización en la nube con Firebase">
+        <span class="fb-icon">🔥</span>
+        <span class="fb-label">Firebase</span>
+      </div>
     </div>
 
     <!-- Global Progress Summary -->
@@ -41,6 +45,7 @@
         <span class="gospel-badge-mini mc" id="badgeMc" title="San Marcos">Mc: 0/674</span>
         <span class="gospel-badge-mini lc" id="badgeLc" title="San Lucas">Lc: 0/1149</span>
         <span class="gospel-badge-mini jn" id="badgeJn" title="San Juan">Jn: 0/879</span>
+        <span class="gospel-badge-mini fs" id="badgeFs" title="Fusión">Fs: 0</span>
       </div>
     </div>
 
@@ -113,6 +118,11 @@
             <span class="g-name">Juan</span>
             <span class="g-count" id="countTabJn">0/879</span>
           </button>
+          <button class="gospel-tab fs" data-gospel="fs" role="tab" title="Evangelio Armonizado / Fusión">
+            <span class="g-abbr">Fs</span>
+            <span class="g-name">Fusión</span>
+            <span class="g-count" id="countTabFs">0</span>
+          </button>
         </div>
       </div>
 
@@ -157,6 +167,18 @@
       <div class="source-bulk-bar">
         <span id="sourceChapterSummary" class="chapter-summary-text">Cargando...</span>
         <div class="bulk-buttons">
+          <button id="btnAddSelectedSource" class="btn btn-primary btn-xs" style="display:none;" title="Añadir los versículos marcados al capítulo actual">
+            + Añadir seleccionados (<span id="sourceSelectedCount">0</span>)
+          </button>
+          <button id="btnAddSelectedToFusion" class="btn btn-purple btn-xs" style="display:none;" title="Enviar los versículos marcados a la Mesa de Fusión para compararlos y crear una cita fusionada">
+            🔀 A Fusión (<span id="sourceSelectedFusionCount">0</span>)
+          </button>
+          <button id="btnAddVerseToFs" class="btn btn-purple btn-xs" style="display:none;" title="Abrir el Taller de Fusión para comparar citas de los evangelios y redactar una nueva cita fusionada">
+            🔀 + Nueva Cita Fusionada
+          </button>
+          <button id="btnNewChapterFs" class="btn btn-outline btn-xs" style="display:none;" title="Crear un nuevo capítulo en Fusión">
+            + Nuevo capítulo
+          </button>
           <button id="btnReadSourceChapter" class="btn btn-outline btn-xs btn-audio-play" title="Escuchar este capítulo completo en voz alta">
             <span class="audio-icon">🔊</span> <span class="audio-text">Leer Capítulo</span>
           </button>
@@ -231,6 +253,28 @@
           <button id="btnClearTargetChapter" class="btn btn-outline btn-xs danger-text" title="Quitar todos los versículos de este capítulo">
             Vaciar capítulo
           </button>
+        </div>
+      </div>
+
+      <!-- Barra de Selección Múltiple para Mover y Reordenar -->
+      <div class="target-selection-bar" id="targetSelectionBar" style="display: none;">
+        <div class="selection-info">
+          <label class="select-all-label">
+            <input type="checkbox" id="checkSelectAllTarget" title="Seleccionar o deseleccionar todos los versículos de este capítulo" />
+            <span id="targetSelectedCount">0 seleccionados</span>
+          </label>
+        </div>
+        <div class="selection-actions">
+          <div class="dropdown-move-cap-wrapper">
+            <select id="selectMoveTargetChapter" class="select-move-cap" title="Mover citas seleccionadas a otro capítulo">
+              <option value="">📁 Mover a capítulo...</option>
+            </select>
+          </div>
+          <button id="btnMoveSelectedUp" class="btn-sel-action" title="Subir citas seleccionadas (▲)">▲ Subir</button>
+          <button id="btnMoveSelectedDown" class="btn-sel-action" title="Bajar citas seleccionadas (▼)">▼ Bajar</button>
+          <button id="btnMoveSelectedPos" class="btn-sel-action highlight" title="Mover a otra posición (al inicio, final o versículo específico)">📍 Mover de lugar...</button>
+          <button id="btnDeleteSelected" class="btn-sel-action danger" title="Quitar las citas seleccionadas de este capítulo">🗑️ Quitar</button>
+          <button id="btnClearSelection" class="btn-sel-action secondary" title="Deseleccionar todas las citas">✕</button>
         </div>
       </div>
 
@@ -384,6 +428,7 @@
           <label><input type="checkbox" id="chkSearchMc" checked> Marcos</label>
           <label><input type="checkbox" id="chkSearchLc" checked> Lucas</label>
           <label><input type="checkbox" id="chkSearchJn" checked> Juan</label>
+          <label><input type="checkbox" id="chkSearchFs" checked> Fusión</label>
         </div>
 
         <div class="search-results-stats" id="searchResultsStats">Escribe una palabra para iniciar la búsqueda.</div>
@@ -429,12 +474,175 @@
     </div>
   </div>
 
+  <!-- ============================================== -->
+  <!-- MODAL: FIREBASE INFO Y REGLAS                  -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="modalFirebase" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🔥 Configuración de Firebase Cloud</h3>
+        <button class="modal-close" id="btnCloseFirebaseModal">✕</button>
+      </div>
+      <div class="modal-body help-content">
+        <h4>📡 Estado de la Conexión</h4>
+        <p id="firebaseModalDetail">Verificando estado de Firebase Firestore...</p>
+
+        <h4>⚙️ Reglas de Seguridad de Firestore</h4>
+        <p>Para permitir guardar y cargar desde tu base de datos de Firebase, asegúrate de tener habilitadas las reglas de lectura y escritura en la consola de Firebase:</p>
+        <ol style="margin-left: 1.25rem; font-size: 0.85rem; line-height: 1.7;">
+          <li>Abre la consola de Firebase: <strong><a href="https://console.firebase.google.com/project/los-cuatro-evangelios/firestore/rules" target="_blank" style="color:var(--primary);">Reglas de Firestore</a></strong></li>
+          <li>En la pestaña <strong>Rules (Reglas)</strong>, coloca:</li>
+        </ol>
+        <pre style="background:var(--bg-surface-alt);border:1px solid var(--border-color);padding:0.75rem;border-radius:6px;font-size:0.8rem;overflow-x:auto;margin:0.75rem 0;"><code>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}</code></pre>
+        <p style="font-size:0.85rem;">3. Haz clic en <strong>Publicar (Publish)</strong>.</p>
+        <p style="margin-top:0.75rem;font-size:0.8rem;color:var(--text-muted);">
+          <em>Nota: Aunque Firebase esté en proceso de configuración de permisos, tus datos se guardan de forma 100% segura en tu disco local y en la memoria del navegador.</em>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: TALLER DE ARMONIZACIÓN Y FUSIÓN        -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="modalFusionStudio" style="display: none;">
+    <div class="modal-card modal-xl">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 id="fusionStudioTitle">🔀 Taller de Armonización y Fusión de Citas</h3>
+          <span class="modal-subtitle">Compara los textos paralelos de 2, 3 o 4 evangelios y redacta la mejor versión consolidada</span>
+        </div>
+        <button class="modal-close" id="btnCloseFusionStudio">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Banner de Condición / Regla de Fusión -->
+        <div class="fusion-rule-banner" id="fusionRuleBanner">
+          <span class="banner-icon" id="fusionBannerIcon">ℹ️</span>
+          <span class="banner-text" id="fusionRuleBannerText">Para crear una cita fusionada, debes seleccionar 2 o más citas de los evangelios (Mateo, Marcos, Lucas o Juan).</span>
+        </div>
+
+        <!-- Selector Rápido de Citas Paralelas -->
+        <div class="fusion-quick-picker-card">
+          <div class="picker-card-title">➕ Agregar cita paralela a la comparación:</div>
+          <div class="picker-controls-row">
+            <div class="picker-field">
+              <label for="pickerGospel">Evangelio:</label>
+              <select id="pickerGospel" class="picker-select">
+                <option value="mt">Mateo</option>
+                <option value="mc">Marcos</option>
+                <option value="lc">Lucas</option>
+                <option value="jn">Juan</option>
+              </select>
+            </div>
+            <div class="picker-field">
+              <label for="pickerChapter">Capítulo:</label>
+              <select id="pickerChapter" class="picker-select"></select>
+            </div>
+            <div class="picker-field picker-field-verse">
+              <label for="pickerVerse">Versículo:</label>
+              <select id="pickerVerse" class="picker-select"></select>
+            </div>
+            <button id="btnPickerAddQuote" class="btn btn-primary btn-sm" type="button">+ Agregar a Comparación</button>
+          </div>
+          <div class="picker-preview-box" id="pickerPreviewBox">
+            <span class="picker-preview-ref" id="pickerPreviewRef">MT 1:1</span>
+            <span class="picker-preview-text" id="pickerPreviewText">Cargando versículo...</span>
+          </div>
+        </div>
+
+        <!-- Área de Comparación de Citas Paralelas -->
+        <div class="fusion-section-title">
+          <span>📖 Citas Paralelas Seleccionadas (<span id="fusionComparisonCount">0</span> para analizar)</span>
+          <button id="btnClearAllQuotesInStudio" class="btn-link-action" type="button">Vaciar todas</button>
+        </div>
+        <div class="fusion-comparison-grid" id="fusionComparisonGrid">
+          <!-- Cards generadas dinámicamente -->
+        </div>
+
+        <!-- Área de Redacción y Síntesis -->
+        <div class="fusion-editor-container">
+          <div class="fusion-editor-header">
+            <div class="fusion-editor-title">
+              <span>✍️ Redacción de la Cita Fusionada</span>
+              <span class="fusion-sources-label" id="fusionSourcesLabel">Fuentes: (selecciona al menos 2 citas de los evangelios)</span>
+            </div>
+            <div class="fusion-editor-dest">
+              <label for="fusionTargetChapterSelect">Guardar en Fusión Cap.:</label>
+              <select id="fusionTargetChapterSelect" class="picker-select"></select>
+              <span class="next-verse-tag" id="fusionNextVerseBadge">Versículo 1</span>
+            </div>
+          </div>
+
+          <div class="fusion-editor-tools">
+            <button id="btnMergeAllQuotes" class="btn-tool-action" type="button" title="Unir los textos de las citas seleccionadas en el área de redacción para editarlos">
+              ✨ Unir textos como borrador
+            </button>
+            <button id="btnClearEditorDraft" class="btn-tool-action secondary" type="button" title="Limpiar el área de redacción">
+              🧹 Limpiar
+            </button>
+            <span class="char-count" id="fusionDraftCharCount">0 caracteres</span>
+          </div>
+
+          <textarea id="fusionDraftTextarea" class="fusion-draft-textarea" placeholder="Redacta o sintetiza aquí la mejor redacción fusionada de las citas analizadas..." rows="4"></textarea>
+        </div>
+      </div>
+
+      <!-- Footer Modal -->
+      <div class="modal-footer fusion-modal-footer">
+        <div class="footer-status-msg" id="fusionFooterStatus">
+          <span class="warn">⚠️ Se requieren 2 o más citas para habilitar el guardado.</span>
+        </div>
+        <div class="footer-buttons">
+          <button id="btnCancelFusionStudio" class="btn btn-outline" type="button">Cancelar</button>
+          <button id="btnSaveFusionStudio" class="btn btn-purple" type="button" disabled>
+            💾 Guardar Cita Fusionada
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- BARRA FLOTANTE: MESA DE FUSIÓN                 -->
+  <!-- ============================================== -->
+  <div id="fusionDockBar" class="fusion-dock-bar" style="display: none;">
+    <div class="fusion-dock-inner">
+      <div class="fusion-dock-lead">
+        <span class="fusion-dock-icon">🔀</span>
+        <div class="fusion-dock-texts">
+          <strong>Mesa de Fusión</strong>
+          <span id="fusionDockCountText">0 citas seleccionadas</span>
+        </div>
+      </div>
+      <div class="fusion-dock-pills" id="fusionDockPills">
+        <!-- Pills dinámicas como [MT 3:1 ✕] -->
+      </div>
+      <div class="fusion-dock-actions">
+        <button id="btnOpenFusionStudioFromDock" class="btn btn-purple btn-sm" title="Abrir el Taller para comparar y redactar la cita fusionada">
+          🚀 Abrir Taller de Fusión (<span id="fusionDockBtnCount">0</span>)
+        </button>
+        <button id="btnClearFusionDock" class="btn btn-outline btn-sm" title="Vaciar selección de citas">
+          ✕ Vaciar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container"></div>
 
   <!-- Hidden file input for import -->
   <input type="file" id="importFileInput" accept=".json" style="display:none;">
 
+  <!-- Firebase Cloud Sync Module -->
+  <script type="module" src="firebase-sync.js"></script>
   <!-- Data Script (Offline Support) -->
   <script src="data/gospels.js"></script>
   <!-- Application Logic -->

@@ -36,6 +36,10 @@ La interfaz está dividida en dos paneles:
    - 🖱️ **Clic Derecho**: Haz clic derecho sobre el versículo para transferirlo de inmediato sin abrir el menú del navegador.
    - ➕ **Botón "+ Añadir"**: Disponible al pasar el cursor por encima.
 
+4. **Escuchar en Voz Alta (Síntesis de Voz)**:
+   - 🔊 **Bocina en cada versículo**: Pulsa el icono de bocina en cualquier versículo para escucharlo leído en voz alta en español. Si está sonando y vuelves a pulsar, se detiene.
+   - 🔊 **Bocina superior de capítulo ("Leer Capítulo")**: Ubicada en la barra superior. Al pulsarla, lee en orden todo el capítulo, resaltando automáticamente en pantalla cada versículo a medida que avanza. Pulsa nuevamente (`⏹️`) para detener en cualquier momento.
+
 > **Indicador de versículos ya incluidos:**  
 > Cuando un versículo ya ha sido transferido al libro, cambia a un tono verde suave y muestra un distintivo indicando en qué capítulo y posición está (ej: `✓ En Cap. 1 (#3)`).
 
@@ -64,11 +68,32 @@ La interfaz está dividida en dos paneles:
 - **📜 Vista de Lectura (Libro Completo)**: Cambia a la pestaña *"Libro Completo"* para leer todo tu trabajo maquetado como un libro continuo, con capítulos y versículos listos para imprimir o guardar como PDF (`Ctrl + P`).
 - **🔍 Búsqueda Global (`Ctrl + F`)**: Busca palabras o frases en simultáneo en los 4 evangelios y añade los resultados con un solo clic.
 - **💾 Guardado y Respaldos**:
-  - Auto-guardado continuo en memoria local.
+  - **Sincronización en la Nube con Firebase**: Guarda automáticamente cada actualización en Firestore en tu proyecto `los-cuatro-evangelios`.
+  - Auto-guardado continuo en memoria local (`localStorage`).
+  - Guardado en disco en `los_cuatro_evangelios_proyecto.json` vía servidor local.
   - Botón **Guardar** (`Ctrl + S`).
   - **Exportar**: Descarga tu libro en formato **JSON** (copia de seguridad editable), **TXT** (texto limpio), **Markdown** (`.md`) o **HTML** (maquetado bíblico).
   - **Importar**: Puedes subir cualquier archivo `.json` de respaldo previo para continuar tu trabajo en cualquier computadora.
 - **🌙 Tema Claro / Oscuro**: Pulsa el icono de luna/sol en la esquina superior derecha.
+
+---
+
+## 🔥 Configuración de Reglas de Firebase Firestore
+
+Para que Firestore permita guardar y leer sin restricciones en tu base de datos:
+1. Entra a la consola: [Reglas de Firestore](https://console.firebase.google.com/project/los-cuatro-evangelios/firestore/rules)
+2. En la pestaña **Rules**, coloca:
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+3. Haz clic en **Publicar (Publish)**. ¡Listo! La web sincronizará en tiempo real con la nube.
 
 ---
 
@@ -83,10 +108,11 @@ los4evangelios/
 │   └── 50_jn.json       # Texto original San Juan
 ├── data/
 │   └── gospels.js       # Base de datos empaquetada para uso offline
+├── firebase-sync.js     # Módulo de sincronización en la nube con Firebase
 ├── index.html           # Interfaz web principal
-├── styles.css           # Estilos y diseño tipográfico bíblico
+├── styles.css           # Estilos, maquetación Image 1 y fuente MV Boli 1.5rem
 ├── app.js               # Lógica interactiva del editor y armonizador
-├── server.js            # Servidor local Node.js ligero
+├── server.js            # Servidor local Node.js con soporte Firebase y disco
 ├── iniciar.bat          # Lanzador automático para Windows
 └── README.md            # Documentación de uso
 ```
